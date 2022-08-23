@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  cryptonews
+  SAM Template for cryptonews
+  
+Globals:
+  Function:
+    CodeUri: ./news/
+    Runtime: nodejs14.x
+    Architectures:
+      - x86_64
+    Timeout: 300
+
+Resources:
+  GetNews:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: getNews.lambdaHandler
+      Events:
+        GetNewsApi:
+          Type: Api
+          Properties:
+            Path: /get-news
+            Method: get
+
+  RetrieveAndSaveNews:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: retrieveAndSaveNews.lambdaHandler
+      Events:
+        NewsScheduler:
+          Type: Schedule
+          Properties:
+            Schedule: 'rate(30 minutes)'
+            Name: NewsScheduler
+            Description: Scheduler for news 30 minutes
+            Enabled: true
+        
+Outputs:
+  GetNewsApi:
+    Description: "API Gateway endpoint URL for Prod stage for get news function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/get-news/"
